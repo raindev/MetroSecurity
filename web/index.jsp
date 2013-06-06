@@ -9,11 +9,11 @@
   </head>
   <body>
     <h1>Computer Security Laboratory Works</h1>
-    <%--<ol>--%>
-        <%--<li><a href="lab1">Laboratory Work</a></li>--%>
+    <ol>
+        <li><a href="lab1">Laboratory Work</a></li>
         <%--<li><a href="lab2">Laboratory Work</a></li>--%>
         <%--<li><a href="lab3">Laboratory Work</a></li>--%>
         <%--<li><a href="lab4">Laboratory Work</a></li>--%>
-    <%--</ol>--%>
+    </ol>
   </body>
 </html>
