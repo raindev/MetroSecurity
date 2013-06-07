@@ -5,6 +5,7 @@ import javax.servlet.annotation.WebServlet;
 import javax.servlet.http.HttpServlet;
 import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpServletResponse;
+import java.io.File;
 import java.io.IOException;
 import java.io.InputStreamReader;
 import java.sql.*;
@@ -41,12 +42,14 @@ public class CardEventsLister extends HttpServlet {
             stationNames.load(new InputStreamReader(CardEventsLister.class.getClassLoader().getResourceAsStream("/stationNames.properties")));
             errorCodes.load(new InputStreamReader(CardEventsLister.class.getClassLoader().getResourceAsStream("/errors.properties")));
             eventCodes.load(new InputStreamReader(CardEventsLister.class.getClassLoader().getResourceAsStream("/events.properties")));
-            properties.load(new InputStreamReader(CardEventsLister.class.getClassLoader().getResourceAsStream("/events.properties")));
+            properties.load(new InputStreamReader(CardEventsLister.class.getClassLoader().getResourceAsStream("/metro.properties")));
         } catch (IOException e) {
             e.printStackTrace();
         }
 
     }
+
+    private Object dbPath;
 
     protected void doPost(HttpServletRequest request, HttpServletResponse response) throws ServletException, IOException {
 
@@ -67,7 +70,12 @@ public class CardEventsLister extends HttpServlet {
                         request.setAttribute("error", true);
                         break query;
                     }
-                    Connection connection = DriverManager.getConnection("jdbc:sqlite:" + properties.get("db_path") + "adbk." + stationNames.get(station) + ".11.db3");
+                    dbPath = properties.get("db_path");
+                    String dbFile = dbPath + "adbk." + stationNames.get(station)  + ".11.db3";
+                    log(dbFile);
+                    log(String.valueOf(new File(dbFile).exists()));
+                    request.setAttribute("fileUpdate", new Date(new File(dbFile).lastModified()));
+                    Connection connection = DriverManager.getConnection("jdbc:sqlite:" + dbFile);
                     PreparedStatement statement = connection.prepareStatement("SELECT DateTime date, ErrorCode error, EventCode event FROM events WHERE cardNo = ?");
                     statement.setString(1, card);
                     ResultSet result = statement.executeQuery();
