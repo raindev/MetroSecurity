@@ -11,10 +11,8 @@ import java.io.InputStreamReader;
 import java.sql.*;
 import java.text.ParseException;
 import java.text.SimpleDateFormat;
+import java.util.*;
 import java.util.Date;
-import java.util.HashMap;
-import java.util.Map;
-import java.util.Properties;
 
 /**
  * List card events by station hall name and card number.
@@ -23,6 +21,7 @@ import java.util.Properties;
 public class CardEventsLister extends HttpServlet {
     private static final String STATION_PARAM = "hall";
     private static final String CARD_PARAM = "card";
+    public static final String EVENT_PARAM = "event";
     public static Properties properties;
     static Properties stationNames;
     private static Properties errorCodes;
@@ -59,6 +58,7 @@ public class CardEventsLister extends HttpServlet {
         request.setCharacterEncoding("utf-8");
         String station = request.getParameter(STATION_PARAM);
         String card = request.getParameter(CARD_PARAM);
+        String event = request.getParameter(EVENT_PARAM);
         query:
         {
             if (station != null && card != null) {
@@ -75,17 +75,28 @@ public class CardEventsLister extends HttpServlet {
                     log(String.valueOf(new File(dbFile).exists()));
                     request.setAttribute("fileUpdate", new Date(new File(dbFile).lastModified()));
                     Connection connection = DriverManager.getConnection("jdbc:sqlite:" + dbFile);
-                    PreparedStatement statement = connection.prepareStatement("SELECT DateTime date, ErrorCode error, EventCode event FROM events WHERE cardNo = ?");
+                    PreparedStatement statement = connection.prepareStatement(
+                            "SELECT " +
+                                    "DateTime date, ErrorCode error, contractID aid, " +
+                                    " ContractCopyID pix, ContractValue contract " +
+                                    "FROM events WHERE cardNo = ? AND eventCode = ?");
                     statement.setString(1, card);
+                    statement.setString(2, event);
+                    log(event + " <<<");
                     ResultSet result = statement.executeQuery();
-                    Map<Date, String> events = new HashMap<>();
+                    List<Event> events = new ArrayList<>();
                     while (result.next()) {
                         String error = result.getString("error");
                         String message = error.equals("0") ?
-                                eventCodes.getProperty(result.getString("event")) :
+                                eventCodes.getProperty(event) :
                                 errorCodes.getProperty(error);
-                        events.put(new SimpleDateFormat("yyyyMMDDHHmmss").parse(result.getString("date")),
-                                message != null ? message : "Невідома операція");
+                        events.add(new Event(
+                                new SimpleDateFormat("yyyyMMDDHHmmss").parse(result.getString("date")),
+                                message != null ? message : "Невідома операція",
+                                result.getInt("aid"),
+                                result.getInt("pix"),
+                                result.getInt("contract")
+                        ));
                     }
                     request.setAttribute("events", events);
                     request.setAttribute("fillList", true);
