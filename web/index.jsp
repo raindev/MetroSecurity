@@ -15,5 +15,6 @@
         <%--<li><a href="lab3">Laboratory Work</a></li>--%>
         <%--<li><a href="lab4">Laboratory Work</a></li>--%>
     </ol>
+    <a href="uploaded.jsp">Uploaded Files</a>
   </body>
 </html>

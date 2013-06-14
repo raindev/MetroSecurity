@@ -23,10 +23,10 @@ import java.util.Properties;
 public class CardEventsLister extends HttpServlet {
     private static final String STATION_PARAM = "hall";
     private static final String CARD_PARAM = "card";
-    private static Properties properties;
-    private static Properties stationNames;
+    public static Properties properties;
+    static Properties stationNames;
     private static Properties errorCodes;
-    private static Properties eventCodes;
+    static Properties eventCodes;
 
     static {
         try {
@@ -71,8 +71,7 @@ public class CardEventsLister extends HttpServlet {
                         break query;
                     }
                     dbPath = properties.get("db_path");
-                    String dbFile = dbPath + "adbk." + stationNames.get(station)  + ".11.db3";
-                    log(dbFile);
+                    String dbFile = dbPath + "adbk." + stationNames.get(station) + ".11.db3";
                     log(String.valueOf(new File(dbFile).exists()));
                     request.setAttribute("fileUpdate", new Date(new File(dbFile).lastModified()));
                     Connection connection = DriverManager.getConnection("jdbc:sqlite:" + dbFile);
@@ -85,7 +84,7 @@ public class CardEventsLister extends HttpServlet {
                         String message = error.equals("0") ?
                                 eventCodes.getProperty(result.getString("event")) :
                                 errorCodes.getProperty(error);
-                        events.put(new SimpleDateFormat("YYYYMMDDHHMMSS").parse(result.getString("date")),
+                        events.put(new SimpleDateFormat("yyyyMMDDHHmmss").parse(result.getString("date")),
                                 message != null ? message : "Невідома операція");
                     }
                     request.setAttribute("events", events);
