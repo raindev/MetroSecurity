@@ -10,52 +10,77 @@
 <head>
     <meta charset="utf-8">
     <title>Lab2</title>
+    <link href="css/bootstrap.min.css" rel="stylesheet" media="screen">
+    <link href="css/metro.css" rel="stylesheet">
 </head>
 <body>
-  <form>
-      <label>
-          Metro station:
-          <select name="station">
-              <option>Дніпро</option>
-              <option>Лісова (захід)</option>
-              <option>Лісова (схід)</option>
-              <option>Хрещатик І (вул. Хрещатик)</option>
-          </select>
-      </label>
-      <label>
-          Station hall
-          <input type="text" name="hall">
-      </label>
-      <br>
-      <i>
-          Date Format: YYYY.MM.DD.HH.MM
-      </i>
-      <br>
-      <label>
-          From:
-          <input type="text" name="from">
-      </label>
-      <label>
-          To:
-          <input type="text" name="to">
-      </label>
-      <input type="submit">
+  <form class="form-horizontal">
+      <fieldset>
+          <legend>Пошук інкасацій</legend>
+          <div class="control-group">
+              <label for="station" class="control-label">
+                  Станція метро
+              </label>
+              <div class="controls">
+                  <select id="station" name="station">
+                      <option>Дніпро</option>
+                      <option>Лісова (захід)</option>
+                      <option>Лісова (схід)</option>
+                      <option>Хрещатик І (вул. Хрещатик)</option>
+                  </select>
+              </div>
+          </div>
+          <div class="control-group">
+              <label for="hall" class="control-label">
+                  Вестибюль
+              </label>
+              <div class="controls">
+                  <input id="hall" type="number" min="1" name="hall" placeholder="Номер вестибюлю">
+              </div>
+          </div>
+          <div class="control-group">
+              <label for="from" class="control-label">
+                  Від
+              </label>
+              <div class="controls">
+                  <input id="from" type="text" name="from" placeholder="YYYY.MM.DD.HH.MM">
+              </div>
+          </div>
+          <div class="control-group">
+              <label for="to" class="control-label">
+                  До
+              </label>
+              <div class="controls">
+                  <input id="to" type="text" name="to" placeholder="YYYY.MM.DD.HH.MM">
+              </div>
+          </div>
+          <div class="controls">
+              <input type="submit" class="btn" value="Шукати">
+          </div>
+      </fieldset>
   </form>
   <%
       @SuppressWarnings("unchecked")
       List<IncasationEvent> events = (List<IncasationEvent>) request.getAttribute("events");
       if (events != null) {
-          %><table style="border: 1px solid black;"><%
+          %>
+  <table class="table">
+      <thead>
+      <tr>
+          <th>Дата</th>
+          <th>Касир</th>
+          <th>Сума</th>
+      </tr>
+      </thead>
+
+      <%
           int sum = 0;
           for (IncasationEvent event : events) {
               sum += event.getValue();
-              %><tr><td style="border: 1px solid black;"><%= new SimpleDateFormat("yyyyMMDDHHmmss").parse(event.getDate()) %></td><td style="border: 1px solid black;"><%= event.getCashier() %></td><td style="border: 1px solid black;"><%= event.getEventType() %></td><td style="border: 1px solid black;"><%=event.getValue()%></td></tr><%
+              %><tr><td><%= new SimpleDateFormat("yyyyMMDDHHmmss").parse(event.getDate()) %></td><td><%= event.getCashier() %></td><td><%=event.getValue()%></td></tr><%
           }
           %></table><%
-          %><h4>Сумарний баланс: <%= sum %> ГРН</h4><%
-      } else {
-              %>EMPTY<%
-          }
-  %>
+          %><h4 id="balance">Сумарний баланс: <%= sum %> ГРН</h4><%
+      } %>
 </body>
 </html>

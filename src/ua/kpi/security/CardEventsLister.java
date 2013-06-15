@@ -62,19 +62,20 @@ public class CardEventsLister extends HttpServlet {
         query:
         {
             if (station != null && card != null) {
+                if (stationNames.get(station) == null) {
+                    log(station);
+                    log(stationNames.propertyNames().nextElement().toString());
+                    log(stationNames.get(stationNames.propertyNames().nextElement()).toString());
+                    request.setAttribute("error", true);
+                    break query;
+                }
+                dbPath = properties.get("db_path");
+                String dbFile = dbPath + "adbk." + stationNames.get(station) + ".11.db3";
+                request.setAttribute("fileUpdate", new Date(new File(dbFile).lastModified()));
+                List<Event> events = null;
+                Connection connection = null;
                 try {
-                    if (stationNames.get(station) == null) {
-                        log(station);
-                        log(stationNames.propertyNames().nextElement().toString());
-                        log(stationNames.get(stationNames.propertyNames().nextElement()).toString());
-                        request.setAttribute("error", true);
-                        break query;
-                    }
-                    dbPath = properties.get("db_path");
-                    String dbFile = dbPath + "adbk." + stationNames.get(station) + ".11.db3";
-                    log(String.valueOf(new File(dbFile).exists()));
-                    request.setAttribute("fileUpdate", new Date(new File(dbFile).lastModified()));
-                    Connection connection = DriverManager.getConnection("jdbc:sqlite:" + dbFile);
+                    connection = DriverManager.getConnection("jdbc:sqlite:" + dbFile);
                     PreparedStatement statement = connection.prepareStatement(
                             "SELECT " +
                                     "DateTime date, ErrorCode error, contractID aid, " +
@@ -84,7 +85,7 @@ public class CardEventsLister extends HttpServlet {
                     statement.setString(2, event);
                     log(event + " <<<");
                     ResultSet result = statement.executeQuery();
-                    List<Event> events = new ArrayList<>();
+                    events = new ArrayList<>();
                     while (result.next()) {
                         String error = result.getString("error");
                         String message = error.equals("0") ?
@@ -98,13 +99,21 @@ public class CardEventsLister extends HttpServlet {
                                 result.getInt("contract")
                         ));
                     }
-                    request.setAttribute("events", events);
-                    request.setAttribute("fillList", true);
                 } catch (SQLException e) {
                     throw new ServletException(e);
                 } catch (ParseException e) {
-                    e.printStackTrace();
+                    log("Date parsing error", e);
+                } finally {
+                    try {
+                        if (connection != null) {
+                            connection.close();
+                        }
+                    } catch (SQLException e) {
+                        log("Cannot close connection", e);
+                    }
                 }
+                request.setAttribute("events", events);
+                request.setAttribute("fillList", true);
             } else {
                 request.setAttribute("fillList", false);
             }
